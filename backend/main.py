@@ -57,8 +57,11 @@ async def upload_receipt(file: UploadFile = File(...)):
                         Important rules:
                             - If an item has a quantity greater than 1, split it into separate line items each with their individual price.
                             - For example, 2 x Sprite at $8.00 should become two separate items each at $4.00.
-                            - If there is no tax, use 0.00.
-                        """
+                            - Item prices are always the final price inclusive of any tax.
+                            - The total is always the final amount to be paid inclusive of any tax.
+                            - If a subtotal is shown, ignore it — use the total as the source of truth.
+                            - If there is no separate tax line, set tax to 0.00.
+                            - If a tax amount is explicitly shown as a separate line (not included in item prices), include it in the tax field."""
                     }
                 ],
             }

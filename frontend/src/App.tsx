@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import ItemTable from './ItemTable'
 import PeopleManager from './PeopleManager'
+import SplitSummary from './SplitSummary'
 
 interface Item {
   name: string
@@ -87,6 +88,12 @@ function App() {
             total={receipt.total}
             people={people}
             onItemsChange={(items) => setReceipt({ ...receipt, items })}
+          />
+          <SplitSummary
+            items={receipt.items || []}
+            tax={receipt.tax || 0}
+            total={receipt.total || 0}
+            people={people || []}
           />
         </>
       )}
