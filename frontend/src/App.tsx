@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import ItemTable from './ItemTable'
+import PeopleManager from './PeopleManager'
 
 interface Item {
   name: string
   price: number
+  assignedTo: string[]
 }
 
 interface ReceiptData {
@@ -18,6 +20,7 @@ function App() {
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [receipt, setReceipt] = useState<ReceiptData | null>(null)
+  const [people, setPeople] = useState<string[]>([])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -33,7 +36,11 @@ function App() {
     })
 
     const data = await response.json()
-    setReceipt(data)
+    const itemsWithAssignments = data.items.map((item: Omit<Item, 'assignedTo'>) => ({
+      ...item,
+      assignedTo: []
+    }))
+    setReceipt({ ...data, items: itemsWithAssignments })
     setUploading(false)
   }, [])
 
@@ -44,7 +51,7 @@ function App() {
   })
 
   return (
-    <div style={{ maxWidth: 600, margin: '60px auto', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: 700, margin: '60px auto', fontFamily: 'sans-serif' }}>
       <h1>Bill Splitter</h1>
 
       <div
@@ -67,20 +74,21 @@ function App() {
         }
       </div>
 
-      {preview && (
-        <div style={{ marginTop: 24 }}>
-          <img src={preview} alt="Receipt preview" style={{ maxWidth: '100%' }} />
-        </div>
-      )}
-
       {receipt && (
-        <ItemTable
-          items={receipt.items}
-          subtotal={receipt.subtotal}
-          tax={receipt.tax}
-          total={receipt.total}
-          onItemsChange={(items) => setReceipt({ ...receipt, items })}
-        />
+        <>
+          <PeopleManager
+            people={people}
+            onPeopleChange={setPeople}
+          />
+          <ItemTable
+            items={receipt.items}
+            subtotal={receipt.subtotal}
+            tax={receipt.tax}
+            total={receipt.total}
+            people={people}
+            onItemsChange={(items) => setReceipt({ ...receipt, items })}
+          />
+        </>
       )}
     </div>
   )
