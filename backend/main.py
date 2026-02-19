@@ -53,7 +53,12 @@ async def upload_receipt(file: UploadFile = File(...)):
                             "subtotal": 0.00,
                             "tax": 0.00,
                             "total": 0.00
-                        }"""
+                        }
+                        Important rules:
+                            - If an item has a quantity greater than 1, split it into separate line items each with their individual price.
+                            - For example, 2 x Sprite at $8.00 should become two separate items each at $4.00.
+                            - If there is no tax, use 0.00.
+                        """
                     }
                 ],
             }
