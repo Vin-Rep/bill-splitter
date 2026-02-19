@@ -1,34 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0]
+    setPreview(URL.createObjectURL(file))
+    
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await fetch('http://127.0.0.1:8000/upload', {
+      method: 'POST',
+      body: formData
+    })
+    
+    const data = await response.json()
+    console.log('Server response:', data)
+    setUploading(false)
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': [] },
+    maxFiles: 1
+  })
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{ maxWidth: 600, margin: '60px auto', fontFamily: 'sans-serif' }}>
+      <h1>Bill Splitter</h1>
+
+      <div
+        {...getRootProps()}
+        style={{
+          border: '2px dashed #ccc',
+          borderRadius: 8,
+          padding: 40,
+          textAlign: 'center',
+          cursor: 'pointer',
+          background: isDragActive ? '#f0f0f0' : 'white'
+        }}
+      >
+        <input {...getInputProps()} />
+        {isDragActive
+          ? <p>Drop the receipt here...</p>
+          : <p>Drag and drop a receipt image, or click to select</p>
+        }
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {preview && (
+        <div style={{ marginTop: 24 }}>
+          <img src={preview} alt="Receipt preview" style={{ maxWidth: '100%' }} />
+        </div>
+      )}
+    </div>
   )
 }
 
